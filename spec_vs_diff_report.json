@@ -1,0 +1,25 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-03-02T12:53:32.422Z",
+  "summary": "Both REQ-21 and REQ-22 are addressed in the diff. ModeSelector.tsx shows labels renamed to 'Global' and 'Intent' with equal-width grid layout and truncate class. App.tsx appears modified but the truncated diff does not clearly show the max-height and overflow-y scroll addition to the bottom panel. The file summary for ModeSelector.tsx confirms the rename. However, the App.tsx diff is truncated and the scroll addition cannot be fully verified from the visible content.",
+  "missing_requirements": [
+    {
+      "id": "REQ-22",
+      "requirement": "Add vertical scroll to the bottom data panel in App.tsx with a defined max-height and overflow-y: auto so all tab content is fully scrollable.",
+      "reason": "The App.tsx diff is truncated and does not show the bottom panel container with max-height and overflow-y settings. The file-summaries.txt also does not mention scroll being added to the bottom panel. Cannot confirm this requirement is implemented.",
+      "evidence": [
+        "frontend/src/App.tsx",
+        "frontend-file-summaries.txt"
+      ]
+    }
+  ],
+  "hallucinated_features": [],
+  "confidence": 0.6,
+  "changed_files": [
+    "frontend-file-summaries.txt",
+    "frontend/src/App.tsx",
+    "frontend/src/components/ModeSelector.tsx",
+    "project_state.json"
+  ]
+}

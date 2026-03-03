@@ -1,0 +1,282 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 9,
+  "summary": "Knowledge Graph Builder web application on Caffeine.ai (Internet Computer). Accepts .xlsx files with keyword queries and frequencies. Supports two modes: Global (single graph across all queries) and Intent (separate graphs per intent group + meta-graph). Features statistical NLP analysis (TF-IDF, co-occurrence), knowledge graph construction, triplets, taxonomy, ontology, 3D visualization (React Three Fiber), and export to JSON/CSV/Excel. All processing in-browser, no external APIs, single session only. UI is in Russian with tooltips on all controls.",
+  "architectural_notes": [
+    "All NLP/semantic analysis runs client-side in TypeScript (browser only, no backend or external API calls)",
+    "Single browser session only — no persistent storage in IC canister",
+    "Excel parsing handled on frontend using the 'xlsx' library",
+    "3D graph visualization via React Three Fiber / Three.js",
+    "Mode switching via parameter: 'global' | 'intent'"
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-implement-an-excel-xlsx-file-upload-component-on-the-frontend-that-parses-the-uploaded-file-using-the-xlsx-library-column-a-contains-keyword-queries-column-b-contains-integer-frequencies-empty-rows-in-column-a-act-as-intent-group-delimiters-parse-the-file-into-an-internal-data-structure-an-array-of-intent-groups-each-group-being-an-array-of-query-string-frequency-number-objects",
+      "title": "Implement an Excel (.xlsx) file upload component on the frontend that parses the uploaded file using the 'xlsx' library. Column A contains keyword queries, Column B contains integer frequencies. Empty rows in Column A act as intent group delimiters. Parse the file into an internal data structure: an array of intent groups, each group being an array of { query: string, frequency: number } objects.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-mode-selector-with-two-options-global-and-intent-in-global-mode-all-keyword-queries-from-all-intent-groups-are-merged-into-a-single-flat-array-for-analysis-in-intent-mode-each-intent-group-is-processed-separately-and-a-meta-graph-is-also-computed-where-nodes-are-intents-and-edges-represent-inter-intent-semantic-similarity",
+      "title": "Implement a mode selector with two options: 'Global' and 'Intent'. In Global mode, all keyword queries from all intent groups are merged into a single flat array for analysis. In Intent mode, each intent group is processed separately, and a meta-graph is also computed where nodes are intents and edges represent inter-intent semantic similarity.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-statistical-nlp-analysis-engine-pure-typescript-no-external-apis-that-processes-the-parsed-keyword-queries-to-extract-1-term-level-tf-idf-scores-across-the-query-corpus-2-co-occurrence-matrix-between-terms-within-a-sliding-window-3-entity-candidates-significant-terms-by-tf-idf-threshold-and-4-relation-candidates-co-occurring-entity-pairs-weighted-by-co-occurrence-frequency-and-query-frequencies-this-engine-must-work-identically-for-both-global-and-per-intent-datasets",
+      "title": "Implement a statistical NLP analysis engine (pure TypeScript, no external APIs) that processes the parsed keyword queries to extract: (1) term-level TF-IDF scores across the query corpus, (2) co-occurrence matrix between terms within a sliding window, (3) entity candidates (significant terms by TF-IDF threshold), and (4) relation candidates (co-occurring entity pairs weighted by co-occurrence frequency and query frequencies). This engine must work identically for both Global and per-intent datasets.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-knowledge-graph-module-that-constructs-a-graph-data-structure-from-the-nlp-analysis-output-nodes-represent-entities-terms-with-frequency-based-weights-edges-represent-semantic-relations-with-co-occurrence-based-weights-the-graph-must-store-node-metadata-term-weight-tf-idf-score-and-edge-metadata-source-target-relation-type-weight-expose-the-graph-as-a-serializable-json-compatible-structure",
+      "title": "Build a Knowledge Graph module that constructs a graph data structure from the NLP analysis output. Nodes represent entities/terms with frequency-based weights. Edges represent semantic relations with co-occurrence-based weights. The graph must store node metadata (term, weight, TF-IDF score) and edge metadata (source, target, relation type, weight). Expose the graph as a serializable JSON-compatible structure.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-triplets-module-that-automatically-extracts-semantic-triplets-in-the-form-entity-a-relation-type-entity-b-from-the-knowledge-graph-edges-relation-types-must-be-inferred-statistically-classify-each-edge-as-one-of-association-co-occurrence-hierarchical-or-functional-based-on-weight-thresholds-and-tf-idf-differentials-between-connected-nodes-store-triplets-as-an-array-of-subject-predicate-object-weight-objects",
+      "title": "Implement a Triplets module that automatically extracts semantic triplets in the form (Entity A) — (Relation Type) → (Entity B) from the knowledge graph edges. Relation types must be inferred statistically: classify each edge as one of 'association', 'co-occurrence', 'hierarchical', or 'functional' based on weight thresholds and TF-IDF differentials between connected nodes. Store triplets as an array of { subject, predicate, object, weight } objects.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-taxonomy-module-that-builds-a-hierarchical-tree-structure-from-the-knowledge-graph-top-level-nodes-are-high-tf-idf-high-degree-entities-child-nodes-are-lower-weight-terms-that-co-occur-predominantly-with-a-single-parent-in-global-mode-produce-one-global-taxonomy-tree-in-intent-mode-produce-one-taxonomy-tree-per-intent",
+      "title": "Implement a Taxonomy module that builds a hierarchical tree structure from the knowledge graph. Top-level nodes are high-TF-IDF, high-degree entities. Child nodes are lower-weight terms that co-occur predominantly with a single parent. In Global mode, produce one global taxonomy tree. In Intent mode, produce one taxonomy tree per intent.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-an-ontology-module-that-describes-semantic-relation-types-between-entities-using-the-knowledge-graph-and-triplets-as-input-classify-all-entity-pairs-into-relation-categories-part-whole-one-term-appears-as-a-sub-phrase-of-another-type-subtype-hierarchical-tf-idf-differential-association-high-co-occurrence-similar-tf-idf-functional-one-term-modifies-or-qualifies-another-output-an-ontology-as-a-list-of-entitya-entityb-relationtype-confidence-objects",
+      "title": "Implement an Ontology module that describes semantic relation types between entities. Using the knowledge graph and triplets as input, classify all entity pairs into relation categories: part-whole (one term appears as a sub-phrase of another), type-subtype (hierarchical TF-IDF differential), association (high co-occurrence, similar TF-IDF), functional (one term modifies or qualifies another). Output an ontology as a list of { entityA, entityB, relationType, confidence } objects.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-an-interactive-3d-knowledge-graph-visualization-using-react-three-fiber-and-three-js-render-graph-nodes-as-3d-spheres-sized-by-node-weight-render-edges-as-3d-lines-colored-by-relation-type-apply-a-force-directed-layout-algorithm-e-g-spring-based-to-position-nodes-in-3d-space-support-orbit-controls-rotate-zoom-pan-node-hover-tooltip-showing-term-weight-and-tf-idf-node-click-to-highlight-connected-edges-and-neighbors-and-a-toggle-to-switch-between-viewing-global-graph-per-intent-graphs-and-meta-graph-in-intent-mode",
+      "title": "Implement an interactive 3D knowledge graph visualization using React Three Fiber and Three.js. Render graph nodes as 3D spheres sized by node weight. Render edges as 3D lines colored by relation type. Apply a force-directed layout algorithm (e.g., spring-based) to position nodes in 3D space. Support: orbit controls (rotate, zoom, pan), node hover tooltip showing term, weight, and TF-IDF, node click to highlight connected edges and neighbors, and a toggle to switch between viewing Global graph, per-intent graphs, and meta-graph (in Intent mode).",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-an-export-module-that-allows-the-user-to-download-all-analysis-results-support-1-json-export-containing-the-full-knowledge-graph-triplets-taxonomy-and-ontology-as-a-single-structured-file-2-csv-export-with-separate-sheets-files-for-triplets-and-ontology-3-excel-xlsx-export-using-the-xlsx-library-with-separate-worksheets-for-graph-nodes-graph-edges-triplets-taxonomy-flattened-and-ontology",
+      "title": "Implement an export module that allows the user to download all analysis results. Support: (1) JSON export containing the full knowledge graph, triplets, taxonomy, and ontology as a single structured file; (2) CSV export with separate sheets/files for triplets and ontology; (3) Excel (.xlsx) export using the 'xlsx' library with separate worksheets for: graph nodes, graph edges, triplets, taxonomy (flattened), and ontology.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-design-and-apply-a-cohesive-dark-themed-visual-identity-to-the-entire-application-use-a-deep-dark-background-near-black-with-accent-colors-drawn-from-a-cool-cyan-teal-amber-gold-palette-to-differentiate-node-types-and-relation-categories-use-a-clean-monospace-or-technical-sans-serif-typography-the-layout-should-feature-a-left-sidebar-for-controls-file-upload-mode-selector-export-buttons-a-central-canvas-for-the-3d-graph-and-a-bottom-or-right-panel-for-tabular-data-triplets-taxonomy-ontology-all-ui-elements-must-use-this-theme-consistently",
+      "title": "Design and apply a cohesive dark-themed visual identity to the entire application. Use a deep dark background (near-black), with accent colors drawn from a cool cyan/teal + amber/gold palette to differentiate node types and relation categories. Use a clean monospace or technical sans-serif typography. The layout should feature a left sidebar for controls (file upload, mode selector, export buttons), a central canvas for the 3D graph, and a bottom or right panel for tabular data (triplets, taxonomy, ontology). All UI elements must use this theme consistently.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-application-splash-loading-screen-so-that-the-background-is-pure-black-000000-with-no-background-images-illustrations-or-decorative-graphics-of-any-kind-any-text-or-spinner-elements-may-remain-but-all-imagery-must-be-removed",
+      "title": "Update the application splash/loading screen so that the background is pure black (#000000) with no background images, illustrations, or decorative graphics of any kind. Any text or spinner elements may remain, but all imagery must be removed.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-translate-all-user-facing-text-in-the-application-interface-to-russian-this-includes-all-button-labels-section-headers-tab-names-panel-titles-placeholder-text-error-messages-status-messages-loading-states-legend-labels-and-any-other-visible-strings-across-all-components-app-tsx-fileupload-tsx-modeselector-tsx-graphselector-tsx-exportbuttons-tsx-tripletspanel-tsx-taxonomypanel-tsx-ontologypanel-tsx-graph3d-tsx-and-any-inline-text-in-app-tsx",
+      "title": "Translate all user-facing text in the application interface to Russian. This includes: all button labels, section headers, tab names, panel titles, placeholder text, error messages, status messages, loading states, legend labels, and any other visible strings across all components (App.tsx, FileUpload.tsx, ModeSelector.tsx, GraphSelector.tsx, ExportButtons.tsx, TripletsPanel.tsx, TaxonomyPanel.tsx, OntologyPanel.tsx, Graph3D.tsx, and any inline text in App.tsx).",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-reusable-tooltip-component-that-renders-a-icon-next-to-a-label-on-hover-it-shows-a-popover-with-detailed-russian-language-explanatory-text-this-component-must-integrate-with-the-existing-dark-theme-near-black-background-cyan-amber-accent-monospace-font",
+      "title": "Add a reusable Tooltip component that renders a ❓ icon next to a label; on hover it shows a popover with detailed Russian-language explanatory text. This component must integrate with the existing dark theme (near-black background, cyan/amber accent, monospace font).",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-detailed-russian-language-tooltips-via-the-icon-component-to-the-file-upload-section-explaining-what-xlsx-format-is-required-that-column-a-contains-keyword-queries-column-b-contains-integer-frequencies-and-that-empty-rows-in-column-a-separate-intent-groups",
+      "title": "Add detailed Russian-language tooltips (via the ❓ icon component) to the File Upload section, explaining: what .xlsx format is required, that Column A contains keyword queries, Column B contains integer frequencies, and that empty rows in Column A separate intent groups.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-detailed-russian-language-tooltips-to-the-mode-selector-global-and-intent-modes-explaining-what-each-mode-does-how-global-mode-merges-all-queries-into-a-single-graph-how-intent-mode-processes-each-group-separately-and-produces-a-meta-graph-and-when-to-use-each-mode",
+      "title": "Add detailed Russian-language tooltips to the Mode Selector (Global and Intent modes), explaining: what each mode does, how Global mode merges all queries into a single graph, how Intent mode processes each group separately and produces a meta-graph, and when to use each mode.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-detailed-russian-language-tooltips-to-all-analysis-parameters-and-filters-visible-in-the-ui-e-g-tf-idf-threshold-co-occurrence-window-size-minimum-edge-weight-etc-explaining-what-each-parameter-controls-and-how-changing-it-affects-the-analysis-results",
+      "title": "Add detailed Russian-language tooltips to all analysis parameters and filters visible in the UI (e.g., TF-IDF threshold, co-occurrence window size, minimum edge weight, etc.), explaining what each parameter controls and how changing it affects the analysis results.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-detailed-russian-language-tooltips-to-each-data-section-panel-triplets-taxonomy-and-ontology-explaining-what-each-concept-means-what-a-triplet-is-what-a-taxonomy-is-what-an-ontology-is-how-to-read-the-table-tree-what-the-columns-and-values-represent-and-how-to-use-the-filters-and-sorting-controls-within-each-panel",
+      "title": "Add detailed Russian-language tooltips to each data section panel — Triplets, Taxonomy, and Ontology — explaining: what each concept means (what a triplet is, what a taxonomy is, what an ontology is), how to read the table/tree, what the columns and values represent, and how to use the filters and sorting controls within each panel.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-detailed-russian-language-tooltips-to-each-export-button-json-csv-excel-explaining-what-data-is-included-in-each-format-the-file-structure-e-g-which-sheets-the-excel-file-contains-and-what-use-cases-each-format-is-suitable-for",
+      "title": "Add detailed Russian-language tooltips to each Export button (JSON, CSV, Excel), explaining: what data is included in each format, the file structure (e.g., which sheets the Excel file contains), and what use cases each format is suitable for.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-detailed-russian-language-tooltips-to-the-3d-knowledge-graph-visualization-area-covering-how-to-interact-with-the-graph-rotate-with-left-click-drag-zoom-with-scroll-pan-with-right-click-drag-what-node-size-represents-weight-what-node-hover-tooltip-shows-term-weight-tf-idf-what-clicking-a-node-does-highlights-neighbors-and-connected-edges-and-what-the-edge-color-legend-represents-relation-types-association-co-occurrence-hierarchical-functional",
+      "title": "Add detailed Russian-language tooltips to the 3D Knowledge Graph visualization area, covering: how to interact with the graph (rotate with left-click drag, zoom with scroll, pan with right-click drag), what node size represents (weight), what node hover tooltip shows (term, weight, TF-IDF), what clicking a node does (highlights neighbors and connected edges), and what the edge color legend represents (relation types: association, co-occurrence, hierarchical, functional).",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-detailed-russian-language-tooltips-to-all-relation-type-labels-and-badges-wherever-they-appear-in-the-ui-in-tripletspanel-ontologypanel-graph3d-legend-and-any-other-location-explaining-what-each-relation-type-means-association-tf-idf-co-occurrence-hierarchical-functional",
+      "title": "Add detailed Russian-language tooltips to all relation type labels and badges wherever they appear in the UI (in TripletsPanel, OntologyPanel, Graph3D legend, and any other location), explaining what each relation type means: 'association' (высокая совместная встречаемость, схожий TF-IDF), 'co-occurrence' (термины часто появляются вместе), 'hierarchical' (один термин является подтипом другого), 'functional' (один термин модифицирует или уточняет другой).",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-in-modeselector-tsx-rename-the-mode-button-labels-from-to-global-and-from-to-intent-the-button-widths-must-be-fixed-or-use-consistent-sizing-so-that-switching-between-the-two-labels-does-not-cause-layout-shifts-or-text-overflow-in-the-sidebar",
+      "title": "In ModeSelector.tsx, rename the mode button labels from 'Глобальный' to 'Global' and from 'По намерениям' to 'Intent'. The button widths must be fixed or use consistent sizing so that switching between the two labels does not cause layout shifts or text overflow in the sidebar.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-vertical-scroll-to-the-bottom-data-panel-in-app-tsx-that-contains-the-triplets-taxonomy-and-ontology-tabs-sections-the-panel-container-must-have-a-defined-max-height-and-overflow-y-auto-or-equivalent-tailwind-class-so-that-all-content-within-each-tab-is-fully-scrollable-and-no-data-is-clipped",
+      "title": "Add vertical scroll to the bottom data panel in App.tsx that contains the Triplets, Taxonomy, and Ontology tabs/sections. The panel container must have a defined max-height and overflow-y: auto (or equivalent Tailwind class) so that all content within each tab is fully scrollable and no data is clipped.",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Excel (.xlsx) file upload and parsing with intent grouping by empty rows",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Global mode: single knowledge graph across all queries with frequency-based weights",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Intent mode: separate knowledge graphs per intent + meta-graph of intent similarities",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Statistical NLP analysis: TF-IDF, co-occurrence, entity/relation extraction (no external APIs)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Knowledge graph module: nodes (entities/terms), edges (semantic relations), frequency-based weights",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Triplets module: automatic extraction of (Entity A) - (Relation Type) -> (Entity B) from knowledge graph",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Taxonomy module: hierarchical structure from general to specific, global and per-intent",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Ontology module: semantic relation types (part-whole, type-subtype, association, functional)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "3D graph visualization using React Three Fiber / Three.js with interactive nodes and edges",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Export results (graph, triplets, taxonomy, ontology) to JSON and CSV/Excel",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Translate entire UI to Russian language (all buttons, labels, tabs, error messages, section headers)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Add detailed Russian-language tooltips (❓ icon on hover) to every control, filter, mode, analysis parameter, data section, export button, and 3D visualization element",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Rename mode buttons to English: 'Глобальный' → 'Global', 'По намерениям' → 'Intent' to prevent layout overflow",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Add vertical scroll to bottom panel (Triplets, Taxonomy, Ontology) so all data is fully visible",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Knowledge Graph Builder",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

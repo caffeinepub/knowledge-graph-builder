@@ -1,0 +1,42 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Rename mode buttons to English and add scroll to bottom panel",
+  "requirements": [
+    {
+      "id": "REQ-21",
+      "summary": "Rename ModeSelector button labels from Russian to English with fixed widths to prevent layout shift",
+      "acceptanceCriteria": [
+        "The 'Global' button label reads exactly 'Global' (not 'Глобальный')",
+        "The 'Intent' button label reads exactly 'Intent' (not 'По намерениям')",
+        "Both buttons have equal, fixed widths so no layout shift occurs when toggling between them",
+        "The sidebar layout does not overflow or wrap unexpectedly with the new labels"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/ModeSelector.tsx",
+          "operation": "modify",
+          "description": "Change the mode button labels from 'Глобальный' to 'Global' and 'По намерениям' to 'Intent'. Apply fixed or min-width CSS classes (e.g., w-32 or min-w-[8rem]) to both buttons to ensure consistent sizing and prevent layout shifts when toggling between modes."
+        }
+      ]
+    },
+    {
+      "id": "REQ-22",
+      "summary": "Add vertical scroll to the bottom data panel containing Triplets, Taxonomy, and Ontology tabs",
+      "acceptanceCriteria": [
+        "The bottom panel container has a defined max-height (e.g., a fixed pixel value or viewport-relative value)",
+        "When content in the Triplets tab exceeds the panel height, a vertical scrollbar appears and all rows are accessible by scrolling",
+        "When content in the Taxonomy tab exceeds the panel height, a vertical scrollbar appears and the full tree is accessible by scrolling",
+        "When content in the Ontology tab exceeds the panel height, a vertical scrollbar appears and all entries are accessible by scrolling",
+        "The scrollbar styling is consistent with the existing dark theme"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Add a max-height constraint and overflow-y-auto to the bottom panel container that wraps the Triplets, Taxonomy, and Ontology tab content. Use a viewport-relative value (e.g., max-h-[40vh] or max-h-96) and the overflow-y-auto Tailwind class to enable vertical scrolling when content exceeds the panel height. Ensure the scrollable container wraps all tab content so that each tab's data is independently scrollable."
+        }
+      ]
+    }
+  ]
+}

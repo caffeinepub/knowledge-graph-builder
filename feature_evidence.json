@@ -1,0 +1,41 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-in-modeselector-tsx-rename-the-mode-button-labels-from-to-global-and-from-to-intent-the-button-widths-must-be-fixed-or-use-consistent-sizing-so-that-switching-between-the-two-labels-does-not-cause-layout-shifts-or-text-overflow-in-the-sidebar",
+      "featureTitle": "In ModeSelector.tsx, rename the mode button labels from 'Глобальный' to 'Global' and from 'По намерениям' to 'Intent'. The button widths must be fixed or use consistent sizing so that switching between the two labels does not cause layout shifts or text overflow in the sidebar.",
+      "files": [
+        "frontend/src/components/ModeSelector.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-21"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-vertical-scroll-to-the-bottom-data-panel-in-app-tsx-that-contains-the-triplets-taxonomy-and-ontology-tabs-sections-the-panel-container-must-have-a-defined-max-height-and-overflow-y-auto-or-equivalent-tailwind-class-so-that-all-content-within-each-tab-is-fully-scrollable-and-no-data-is-clipped",
+      "featureTitle": "Add vertical scroll to the bottom data panel in App.tsx that contains the Triplets, Taxonomy, and Ontology tabs/sections. The panel container must have a defined max-height and overflow-y: auto (or equivalent Tailwind class) so that all content within each tab is fully scrollable and no data is clipped.",
+      "files": [
+        "frontend/src/App.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-22"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "kind": "build_request",
+  "title": "Rename mode buttons to English and add scroll to bottom panel",
+  "projectName": "Knowledge Graph Builder",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-21",
+      "text": "In ModeSelector.tsx, rename the mode button labels from 'Глобальный' to 'Global' and from 'По намерениям' to 'Intent'. The button widths must be fixed or use consistent sizing so that switching between the two labels does not cause layout shifts or text overflow in the sidebar.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "переименуй в блоке Режим анализа: \"Глобальный\" в Global и \"По намерениям\" в Intent (чтобы верстка не съезжала)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The 'Global' button label reads exactly 'Global' (not 'Глобальный')",
+        "The 'Intent' button label reads exactly 'Intent' (not 'По намерениям')",
+        "Both buttons have equal, fixed widths so no layout shift occurs when toggling between them",
+        "The sidebar layout does not overflow or wrap unexpectedly with the new labels"
+      ]
+    },
+    {
+      "id": "REQ-22",
+      "text": "Add vertical scroll to the bottom data panel in App.tsx that contains the Triplets, Taxonomy, and Ontology tabs/sections. The panel container must have a defined max-height and overflow-y: auto (or equivalent Tailwind class) so that all content within each tab is fully scrollable and no data is clipped.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "добавь возможность прокрутки в блоке снизу (чтобы видеть полностью все данные - триплетов, таксономий и антологий)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The bottom panel container has a defined max-height (e.g., a fixed pixel value or viewport-relative value)",
+        "When content in the Triplets tab exceeds the panel height, a vertical scrollbar appears and all rows are accessible by scrolling",
+        "When content in the Taxonomy tab exceeds the panel height, a vertical scrollbar appears and the full tree is accessible by scrolling",
+        "When content in the Ontology tab exceeds the panel height, a vertical scrollbar appears and all entries are accessible by scrolling",
+        "The scrollbar styling is consistent with the existing dark theme"
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not modify any files under frontend/src/hooks/ or frontend/src/components/ui/",
+    "All other existing Russian-language labels and tooltips throughout the app must remain unchanged"
+  ],
+  "nonGoals": [
+    "Changing any other labels from Russian to English",
+    "Redesigning the bottom panel layout or tab structure",
+    "Adding horizontal scroll to any panel",
+    "Modifying the 3D graph canvas area"
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

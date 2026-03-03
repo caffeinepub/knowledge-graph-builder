@@ -1,0 +1,49 @@
+{
+  "kind": "coverage_report",
+  "version": "1.0",
+  "generatedAt": "2026-03-02T12:53:32.427Z",
+  "sources": {
+    "buildRequest": true,
+    "implementationPlan": true
+  },
+  "requirements": {
+    "total": 2,
+    "implemented": 2,
+    "items": [
+      {
+        "id": "REQ-21",
+        "summary": "In ModeSelector.tsx, rename the mode button labels from 'Глобальный' to 'Global' and from 'По намерениям' to 'Intent'. The button widths must be fixed or use consistent sizing so that switching between the two labels does not cause layout shifts or text overflow in the sidebar.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/ModeSelector.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/ModeSelector.tsx"
+        ]
+      },
+      {
+        "id": "REQ-22",
+        "summary": "Add vertical scroll to the bottom data panel in App.tsx that contains the Triplets, Taxonomy, and Ontology tabs/sections. The panel container must have a defined max-height and overflow-y: auto (or equivalent Tailwind class) so that all content within each tab is fully scrollable and no data is clipped.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/App.tsx"
+        ]
+      }
+    ]
+  },
+  "changedFiles": [
+    "build-request.json",
+    "feature_evidence.json",
+    "frontend-file-summaries.txt",
+    "frontend-implementation-plan.json",
+    "frontend/src/App.tsx",
+    "frontend/src/components/ModeSelector.tsx",
+    "project_state.json",
+    "scratch/component-selection.json",
+    "spec.md",
+    "spec_vs_diff_report.json"
+  ]
+}
