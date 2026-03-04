@@ -11,6 +11,7 @@ import { ExportButtons } from "./components/ExportButtons";
 import { FileUpload } from "./components/FileUpload";
 import { Graph3D } from "./components/Graph3D";
 import { GraphSelector } from "./components/GraphSelector";
+import { IntentAnalysisPanel } from "./components/IntentAnalysisPanel";
 import { IntentMapPanel } from "./components/IntentMapPanel";
 import { ModeSelector } from "./components/ModeSelector";
 import { NgramPanel } from "./components/NgramPanel";
@@ -582,6 +583,12 @@ export default function App() {
                   >
                     Структура статьи
                   </TabsTrigger>
+                  <TabsTrigger
+                    value="intent-analysis"
+                    className="text-[10px] font-mono h-5 px-2 flex-shrink-0 data-[state=inactive]:text-[oklch(0.55_0.02_240)] data-[state=active]:text-[oklch(0.82_0.19_195)] data-[state=active]:bg-kg-cyan/20"
+                  >
+                    Анализ интентов
+                  </TabsTrigger>
                 </TabsList>
               </div>
 
@@ -639,6 +646,12 @@ export default function App() {
                 className="flex-1 min-h-0 px-3 pb-2 mt-2 overflow-y-auto"
               >
                 <ArticleStructurePanel graph={graph} taxonomy={taxonomy} />
+              </TabsContent>
+              <TabsContent
+                value="intent-analysis"
+                className="flex-1 min-h-0 px-3 pb-2 mt-2 overflow-y-auto"
+              >
+                <IntentAnalysisPanel intentGroups={intentGroups} />
               </TabsContent>
             </Tabs>
           </div>

@@ -8,6 +8,7 @@ import type {
   TaxonomyNode,
 } from "../types";
 import type { IntentGroup } from "../types";
+import { MiniGraph } from "./MiniGraph";
 
 const RELATION_LABELS: Record<string, string> = {
   association: "Ассоциация",
@@ -534,7 +535,16 @@ export function NodeDetailModal({
             )}
           </Section>
 
-          {/* Section 4: Related N-grams */}
+          {/* Section 4: Mini graph (2-level neighbourhood) */}
+          <Section title="Окружение узла (2 уровня)" color="#00d4f5">
+            <MiniGraph
+              focalNode={node}
+              graph={graph}
+              onNodeClick={onNavigateToNode}
+            />
+          </Section>
+
+          {/* Section 5: Related N-grams */}
           <Section title="Связанные N-граммы" color="#22c55e">
             {relatedNgrams.length === 0 ? (
               <EmptyNote text="N-граммы с данным узлом не найдены" />
