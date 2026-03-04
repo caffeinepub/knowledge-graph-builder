@@ -1,12 +1,13 @@
 import { GitBranch, Network } from "lucide-react";
-import React from "react";
-import type { KnowledgeGraph } from "../types";
+import React, { useMemo } from "react";
+import type { IntentGroup, KnowledgeGraph } from "../types";
 import { TooltipIcon } from "./TooltipIcon";
 
 interface GraphSelectorProps {
   intentGraphs: KnowledgeGraph[];
   selectedIndex: number | "meta";
   onChange: (index: number | "meta") => void;
+  intentGroups?: IntentGroup[];
 }
 
 const GRAPH_SELECTOR_TOOLTIP = (
@@ -34,7 +35,18 @@ export function GraphSelector({
   intentGraphs,
   selectedIndex,
   onChange,
+  intentGroups = [],
 }: GraphSelectorProps) {
+  const intentFrequencies = useMemo(() => {
+    if (!intentGroups.length) return [];
+    return intentGroups.map((g) => g.reduce((s, q) => s + q.frequency, 0));
+  }, [intentGroups]);
+
+  const grandTotal = useMemo(
+    () => intentFrequencies.reduce((s, f) => s + f, 0),
+    [intentFrequencies],
+  );
+
   if (intentGraphs.length === 0) return null;
 
   return (
@@ -73,35 +85,47 @@ export function GraphSelector({
           <Network className="w-3 h-3 flex-shrink-0" />
           Мета-граф
         </button>
-        {intentGraphs.map((g, i) => (
-          <button
-            key={g.label || String(i)}
-            type="button"
-            onClick={() => onChange(i)}
-            className={`
-              w-full flex items-center gap-2 px-2.5 py-1.5 rounded text-xs font-mono transition-all duration-150 text-left
-              ${
+        {intentGraphs.map((g, i) => {
+          const freq = intentFrequencies[i] ?? 0;
+          const percent = grandTotal > 0 ? (freq / grandTotal) * 100 : 0;
+          return (
+            <button
+              key={g.label || String(i)}
+              type="button"
+              onClick={() => onChange(i)}
+              className={`
+                w-full flex items-center gap-2 px-2.5 py-1.5 rounded text-xs font-mono transition-all duration-150 text-left
+                ${
+                  selectedIndex === i
+                    ? "bg-kg-amber/20 border border-kg-amber/60"
+                    : "bg-kg-panel border border-kg-border text-muted-foreground hover:border-kg-amber/30"
+                }
+              `}
+              style={
                 selectedIndex === i
-                  ? "bg-kg-amber/20 border border-kg-amber/60"
-                  : "bg-kg-panel border border-kg-border text-muted-foreground hover:border-kg-amber/30"
+                  ? {
+                      color: "oklch(0.78 0.19 75)",
+                      borderColor: "oklch(0.78 0.19 75 / 0.6)",
+                    }
+                  : {}
               }
-            `}
-            style={
-              selectedIndex === i
-                ? {
-                    color: "oklch(0.78 0.19 75)",
-                    borderColor: "oklch(0.78 0.19 75 / 0.6)",
-                  }
-                : {}
-            }
-          >
-            <GitBranch className="w-3 h-3 flex-shrink-0" />
-            <span className="truncate">Намерение {i + 1}</span>
-            <span className="ml-auto text-muted-foreground/60">
-              {g.nodes.length}у
-            </span>
-          </button>
-        ))}
+            >
+              <GitBranch className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate">Намерение {i + 1}</span>
+              <span className="ml-auto flex items-center gap-1 text-muted-foreground/60">
+                {grandTotal > 0 && (
+                  <span
+                    className="text-muted-foreground/80"
+                    style={{ fontSize: "9px" }}
+                  >
+                    {percent.toFixed(1)}%
+                  </span>
+                )}
+                {g.nodes.length}у
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

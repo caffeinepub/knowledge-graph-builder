@@ -15,6 +15,13 @@ const RELATION_COLORS: Record<RelationType, string> = {
   functional: "oklch(0.72 0.2 145)",
 };
 
+const RELATION_BG_COLORS: Record<RelationType, string> = {
+  association: "oklch(0.82 0.19 195 / 0.12)",
+  "co-occurrence": "oklch(0.65 0.22 300 / 0.12)",
+  hierarchical: "oklch(0.78 0.19 75 / 0.12)",
+  functional: "oklch(0.72 0.2 145 / 0.12)",
+};
+
 const RELATION_LABELS: Record<RelationType, string> = {
   association: "ассоциация",
   "co-occurrence": "совместная встречаемость",
@@ -164,7 +171,19 @@ export function OntologyPanel({ ontology }: OntologyPanelProps) {
           <button
             type="button"
             onClick={() => setFilterType("all")}
-            className={`text-xs font-mono px-2 py-0.5 rounded border transition-colors ${filterType === "all" ? "border-foreground/40 text-foreground" : "border-kg-border text-muted-foreground hover:border-foreground/20"}`}
+            className="text-xs font-mono px-2 py-0.5 rounded border transition-colors"
+            style={
+              filterType === "all"
+                ? {
+                    borderColor: "oklch(0.82 0.19 195 / 0.7)",
+                    backgroundColor: "oklch(0.82 0.19 195 / 0.12)",
+                    color: "oklch(0.82 0.19 195)",
+                  }
+                : {
+                    borderColor: "oklch(0.25 0.015 255)",
+                    color: "oklch(0.55 0.02 240)",
+                  }
+            }
           >
             Все ({ontology.length})
           </button>
@@ -175,7 +194,19 @@ export function OntologyPanel({ ontology }: OntologyPanelProps) {
             <button
               type="button"
               onClick={() => setFilterType(rt)}
-              className={`text-xs font-mono px-2 py-0.5 rounded border transition-colors ${filterType === rt ? "border-foreground/40 text-foreground" : "border-kg-border text-muted-foreground hover:border-foreground/20"}`}
+              className="text-xs font-mono px-2 py-0.5 rounded border transition-colors"
+              style={
+                filterType === rt
+                  ? {
+                      borderColor: RELATION_COLORS[rt],
+                      backgroundColor: RELATION_BG_COLORS[rt],
+                      color: RELATION_COLORS[rt],
+                    }
+                  : {
+                      borderColor: "oklch(0.25 0.015 255)",
+                      color: "oklch(0.55 0.02 240)",
+                    }
+              }
             >
               {RELATION_LABELS[rt]}
             </button>
@@ -191,7 +222,7 @@ export function OntologyPanel({ ontology }: OntologyPanelProps) {
       <ScrollArea className="flex-1">
         <table className="w-full text-xs font-mono">
           <thead>
-            <tr className="border-b border-kg-border">
+            <tr className="border-b border-kg-table-border">
               <th className="text-left py-1.5 px-2 text-muted-foreground font-normal">
                 <div className="flex items-center gap-1">
                   Сущность 1
@@ -253,9 +284,12 @@ export function OntologyPanel({ ontology }: OntologyPanelProps) {
             {filtered.map((e, i) => (
               <tr
                 key={`${e.entityA}-${e.entityB}-${i}`}
-                className="border-b border-kg-border/40 hover:bg-kg-panel/50 transition-colors"
+                className="border-b border-kg-table-border hover:bg-kg-panel/50 transition-colors"
               >
-                <td className="py-1 px-2 text-foreground/90 max-w-[110px] truncate">
+                <td
+                  className="py-1 px-2 max-w-[200px] truncate"
+                  style={{ color: "oklch(0.92 0.01 240)" }}
+                >
                   {e.entityA}
                 </td>
                 <td className="py-1 px-2">
@@ -276,7 +310,10 @@ export function OntologyPanel({ ontology }: OntologyPanelProps) {
                     />
                   </div>
                 </td>
-                <td className="py-1 px-2 text-foreground/90 max-w-[110px] truncate">
+                <td
+                  className="py-1 px-2 max-w-[200px] truncate"
+                  style={{ color: "oklch(0.92 0.01 240)" }}
+                >
                   {e.entityB}
                 </td>
                 <td className="py-1 px-2 text-right">

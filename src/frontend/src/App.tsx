@@ -5,12 +5,17 @@ import { Heart } from "lucide-react";
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
 
+import { ArticleStructurePanel } from "./components/ArticleStructurePanel";
+import { EntitiesPanel } from "./components/EntitiesPanel";
 import { ExportButtons } from "./components/ExportButtons";
 import { FileUpload } from "./components/FileUpload";
 import { Graph3D } from "./components/Graph3D";
 import { GraphSelector } from "./components/GraphSelector";
+import { IntentMapPanel } from "./components/IntentMapPanel";
 import { ModeSelector } from "./components/ModeSelector";
+import { NgramPanel } from "./components/NgramPanel";
 import { OntologyPanel } from "./components/OntologyPanel";
+import { SemanticCorePanel } from "./components/SemanticCorePanel";
 import { TaxonomyPanel } from "./components/TaxonomyPanel";
 import { TooltipIcon } from "./components/TooltipIcon";
 import { TripletsPanel } from "./components/TripletsPanel";
@@ -81,7 +86,7 @@ function runAnalysis(
 
   const intentLabels = intentGroups.map((g, i) => {
     const topQuery =
-      g.sort((a, b) => b.frequency - a.frequency)[0]?.query ??
+      [...g].sort((a, b) => b.frequency - a.frequency)[0]?.query ??
       `Намерение ${i + 1}`;
     return topQuery.length > 20 ? `${topQuery.slice(0, 20)}…` : topQuery;
   });
@@ -159,11 +164,28 @@ const LEGEND_TOOLTIPS: Record<string, React.ReactNode> = {
   ),
 };
 
+const MIN_FREQ_TOOLTIP = (
+  <div className="space-y-1.5">
+    <p className="font-semibold" style={{ color: "oklch(0.82 0.19 195)" }}>
+      Минимальная частота
+    </p>
+    <p>
+      Минимальная частота запроса для включения в анализ и граф. Запросы с
+      частотой ниже порога скрываются из всех вычислений.
+    </p>
+    <p className="text-muted-foreground">
+      Используйте для фильтрации редких/нерелевантных запросов и фокусировки
+      анализа на наиболее популярных темах.
+    </p>
+  </div>
+);
+
 export default function App() {
   const [intentGroups, setIntentGroups] = useState<IntentGroup[]>([]);
   const [mode, setMode] = useState<AnalysisMode>("global");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [hasAnalyzed, setHasAnalyzed] = useState(false);
+  const [minFreq, setMinFreq] = useState(0);
 
   const [graph, setGraph] = useState<KnowledgeGraph | null>(null);
   const [triplets, setTriplets] = useState<Triplet[]>([]);
@@ -192,7 +214,20 @@ export default function App() {
 
     setTimeout(() => {
       try {
-        const result = runAnalysis(intentGroups, mode);
+        // Apply minFreq filter before analysis
+        const filteredGroups =
+          minFreq > 0
+            ? intentGroups
+                .map((g) => g.filter((q) => q.frequency >= minFreq))
+                .filter((g) => g.length > 0)
+            : intentGroups;
+
+        if (filteredGroups.length === 0) {
+          setIsAnalyzing(false);
+          return;
+        }
+
+        const result = runAnalysis(filteredGroups, mode);
         setGraph(result.graph);
         setTriplets(result.triplets);
         setTaxonomy(result.taxonomy);
@@ -205,7 +240,7 @@ export default function App() {
         setIsAnalyzing(false);
       }
     }, 50);
-  }, [intentGroups, mode]);
+  }, [intentGroups, mode, minFreq]);
 
   const displayGraph = useMemo(() => {
     if (!hasAnalyzed) return null;
@@ -254,7 +289,7 @@ export default function App() {
             className="text-sm font-mono font-semibold tracking-tight"
             style={{ color: "oklch(0.92 0.01 240)" }}
           >
-            Построитель графа знаний
+            SEO Intent Nodes
           </h1>
           <Badge
             variant="outline"
@@ -310,6 +345,7 @@ export default function App() {
             type="button"
             onClick={handleAnalyze}
             disabled={intentGroups.length === 0 || isAnalyzing}
+            data-ocid="analyze.primary_button"
             className={`
               w-full py-2 px-3 rounded text-xs font-mono font-semibold transition-all duration-200
               ${
@@ -337,6 +373,34 @@ export default function App() {
             )}
           </button>
 
+          {/* Min Frequency Filter */}
+          <div className="space-y-1">
+            <div className="flex items-center gap-1">
+              <label
+                htmlFor="min-freq-input"
+                className="text-xs font-mono text-muted-foreground"
+              >
+                Мин. частота
+              </label>
+              <TooltipIcon
+                content={MIN_FREQ_TOOLTIP}
+                side="right"
+                align="start"
+              />
+            </div>
+            <input
+              id="min-freq-input"
+              type="number"
+              min={0}
+              step={1}
+              value={minFreq}
+              onChange={(e) => setMinFreq(Math.max(0, Number(e.target.value)))}
+              data-ocid="filter.input"
+              className="w-full text-xs font-mono px-2 py-1 rounded border border-kg-border bg-kg-panel focus:outline-none focus:border-kg-cyan/40 transition-colors"
+              style={{ color: "oklch(0.92 0.01 240)" }}
+            />
+          </div>
+
           {/* Intent Graph Selector (only in intent mode) */}
           {mode === "intent" && intentGraphs.length > 0 && (
             <>
@@ -345,6 +409,7 @@ export default function App() {
                 intentGraphs={intentGraphs}
                 selectedIndex={selectedGraphIndex}
                 onChange={setSelectedGraphIndex}
+                intentGroups={intentGroups}
               />
             </>
           )}
@@ -433,45 +498,89 @@ export default function App() {
             )}
 
             <div className="absolute inset-0 z-10">
-              <Graph3D graph={displayGraph} />
+              <Graph3D
+                graph={displayGraph}
+                fullGraph={graph}
+                taxonomy={taxonomy}
+                intentGroups={intentGroups}
+              />
             </div>
           </div>
 
           {/* Bottom Data Panel */}
           <div
             className="flex-shrink-0 border-t border-kg-border bg-kg-panel-dark"
-            style={{ height: "280px" }}
+            style={{ height: "300px" }}
           >
             <Tabs defaultValue="triplets" className="h-full flex flex-col">
               <div className="flex-shrink-0 px-3 pt-2">
-                <TabsList className="bg-kg-panel border border-kg-border h-7">
+                <TabsList
+                  className="bg-kg-panel border border-kg-border h-7 flex-nowrap overflow-x-auto"
+                  style={{ scrollbarWidth: "none" }}
+                >
                   <TabsTrigger
                     value="triplets"
-                    className="text-xs font-mono h-5 px-3 data-[state=active]:bg-kg-cyan/20"
+                    data-ocid="tabs.tab"
+                    className="text-[10px] font-mono h-5 px-2 flex-shrink-0 data-[state=inactive]:text-[oklch(0.55_0.02_240)] data-[state=active]:text-[oklch(0.82_0.19_195)] data-[state=active]:bg-kg-cyan/20"
                   >
                     Триплеты
                     {triplets.length > 0 && (
-                      <span className="ml-1.5 text-muted-foreground">
+                      <span className="ml-1 opacity-60">
                         ({triplets.length})
                       </span>
                     )}
                   </TabsTrigger>
                   <TabsTrigger
                     value="taxonomy"
-                    className="text-xs font-mono h-5 px-3 data-[state=active]:bg-kg-amber/20"
+                    className="text-[10px] font-mono h-5 px-2 flex-shrink-0 data-[state=inactive]:text-[oklch(0.55_0.02_240)] data-[state=active]:text-[oklch(0.78_0.19_75)] data-[state=active]:bg-kg-amber/20"
                   >
                     Таксономия
                   </TabsTrigger>
                   <TabsTrigger
                     value="ontology"
-                    className="text-xs font-mono h-5 px-3 data-[state=active]:bg-kg-purple/20"
+                    className="text-[10px] font-mono h-5 px-2 flex-shrink-0 data-[state=inactive]:text-[oklch(0.55_0.02_240)] data-[state=active]:text-[oklch(0.65_0.22_300)] data-[state=active]:bg-kg-purple/20"
                   >
                     Онтология
                     {ontology.length > 0 && (
-                      <span className="ml-1.5 text-muted-foreground">
+                      <span className="ml-1 opacity-60">
                         ({ontology.length})
                       </span>
                     )}
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="entities"
+                    className="text-[10px] font-mono h-5 px-2 flex-shrink-0 data-[state=inactive]:text-[oklch(0.55_0.02_240)] data-[state=active]:text-[oklch(0.82_0.19_195)] data-[state=active]:bg-kg-cyan/20"
+                  >
+                    Сущности
+                    {graph && graph.nodes.length > 0 && (
+                      <span className="ml-1 opacity-60">
+                        ({graph.nodes.length})
+                      </span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="semantic-core"
+                    className="text-[10px] font-mono h-5 px-2 flex-shrink-0 data-[state=inactive]:text-[oklch(0.55_0.02_240)] data-[state=active]:text-[oklch(0.72_0.2_145)] data-[state=active]:bg-kg-green/20"
+                  >
+                    Ядро
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="ngrams"
+                    className="text-[10px] font-mono h-5 px-2 flex-shrink-0 data-[state=inactive]:text-[oklch(0.55_0.02_240)] data-[state=active]:text-[oklch(0.78_0.19_75)] data-[state=active]:bg-kg-amber/20"
+                  >
+                    N-граммы
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="intent-map"
+                    className="text-[10px] font-mono h-5 px-2 flex-shrink-0 data-[state=inactive]:text-[oklch(0.55_0.02_240)] data-[state=active]:text-[oklch(0.65_0.22_300)] data-[state=active]:bg-kg-purple/20"
+                  >
+                    Карта интентов
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="article"
+                    className="text-[10px] font-mono h-5 px-2 flex-shrink-0 data-[state=inactive]:text-[oklch(0.55_0.02_240)] data-[state=active]:text-[oklch(0.72_0.2_145)] data-[state=active]:bg-kg-green/20"
+                  >
+                    Структура статьи
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -493,6 +602,43 @@ export default function App() {
                 className="flex-1 min-h-0 px-3 pb-2 mt-2 overflow-y-auto"
               >
                 <OntologyPanel ontology={ontology} />
+              </TabsContent>
+              <TabsContent
+                value="entities"
+                className="flex-1 min-h-0 px-3 pb-2 mt-2 overflow-y-auto"
+              >
+                <EntitiesPanel graph={graph} />
+              </TabsContent>
+              <TabsContent
+                value="semantic-core"
+                className="flex-1 min-h-0 px-3 pb-2 mt-2 overflow-y-auto"
+              >
+                <SemanticCorePanel
+                  graph={graph}
+                  intentGraphs={intentGraphs}
+                  mode={mode}
+                />
+              </TabsContent>
+              <TabsContent
+                value="ngrams"
+                className="flex-1 min-h-0 px-3 pb-2 mt-2 overflow-y-auto"
+              >
+                <NgramPanel intentGroups={intentGroups} />
+              </TabsContent>
+              <TabsContent
+                value="intent-map"
+                className="flex-1 min-h-0 px-3 pb-2 mt-2 overflow-y-auto"
+              >
+                <IntentMapPanel
+                  intentGraphs={intentGraphs}
+                  intentGroups={intentGroups}
+                />
+              </TabsContent>
+              <TabsContent
+                value="article"
+                className="flex-1 min-h-0 px-3 pb-2 mt-2 overflow-y-auto"
+              >
+                <ArticleStructurePanel graph={graph} taxonomy={taxonomy} />
               </TabsContent>
             </Tabs>
           </div>

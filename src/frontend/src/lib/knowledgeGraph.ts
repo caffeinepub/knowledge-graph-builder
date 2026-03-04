@@ -67,6 +67,7 @@ export function buildKnowledgeGraph(
     label: e.term,
     weight: e.totalFrequency / maxFreq,
     tfidf: e.tfidf,
+    frequency: e.totalFrequency,
     group: groupLabel,
     x: 0,
     y: 0,

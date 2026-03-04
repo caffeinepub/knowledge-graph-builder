@@ -77,7 +77,8 @@ export default {
         'kg-dark': 'oklch(0.1 0.005 260)',
         'kg-panel': 'oklch(0.14 0.008 255)',
         'kg-panel-dark': 'oklch(0.11 0.006 258)',
-        'kg-border': 'oklch(0.25 0.015 255)',
+        'kg-border': 'oklch(0.22 0.012 255)',
+        'kg-table-border': 'oklch(0.17 0.008 255)',
       },
       borderRadius: {
         lg: 'var(--radius)',

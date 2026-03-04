@@ -1,7 +1,18 @@
-import { Download, FileJson, FileSpreadsheet, FileText } from "lucide-react";
+import {
+  Download,
+  FileCode,
+  FileJson,
+  FileSpreadsheet,
+  FileText,
+} from "lucide-react";
 import type React from "react";
 import { useState } from "react";
-import { exportToCSV, exportToExcel, exportToJSON } from "../lib/exportUtils";
+import {
+  exportToCSV,
+  exportToExcel,
+  exportToJSON,
+  exportToMarkdown,
+} from "../lib/exportUtils";
 import type {
   KnowledgeGraph,
   OntologyEntry,
@@ -84,7 +95,25 @@ const EXCEL_TOOLTIP = (
   </div>
 );
 
-type ExportType = "json" | "csv" | "excel";
+const MD_TOOLTIP = (
+  <div className="space-y-1.5">
+    <p className="font-semibold" style={{ color: "oklch(0.72 0.2 145)" }}>
+      Экспорт Markdown
+    </p>
+    <p>
+      Экспорт структуры статьи в Markdown-формате (H1/H2/H3 + LSI-слова).
+      Используйте как основу для написания SEO-статьи.
+    </p>
+    <ul className="space-y-0.5 list-none">
+      <li>• Заголовок H1 из топ-сущности</li>
+      <li>• Разделы H2 из таксономии</li>
+      <li>• Подразделы H3</li>
+      <li>• Список LSI-слов</li>
+    </ul>
+  </div>
+);
+
+type ExportType = "json" | "csv" | "excel" | "markdown";
 
 interface ButtonConfig {
   type: ExportType;
@@ -102,6 +131,7 @@ const BUTTONS: ButtonConfig[] = [
     Icon: FileSpreadsheet,
     tooltip: EXCEL_TOOLTIP,
   },
+  { type: "markdown", label: "MD", Icon: FileCode, tooltip: MD_TOOLTIP },
 ];
 
 export function ExportButtons({
@@ -121,7 +151,9 @@ export function ExportButtons({
     try {
       if (type === "json") exportToJSON(graph, triplets, taxonomy, ontology);
       else if (type === "csv") exportToCSV(triplets, ontology);
-      else exportToExcel(graph, triplets, taxonomy, ontology);
+      else if (type === "excel")
+        exportToExcel(graph, triplets, taxonomy, ontology);
+      else if (type === "markdown") exportToMarkdown(graph, taxonomy);
     } finally {
       setTimeout(() => setExporting(null), 800);
     }
@@ -132,7 +164,7 @@ export function ExportButtons({
       <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
         Экспорт
       </p>
-      <div className="grid grid-cols-3 gap-1.5">
+      <div className="grid grid-cols-4 gap-1.5">
         {BUTTONS.map(({ type, label, Icon, tooltip }) => (
           <div key={type} className="relative flex flex-col items-center">
             <button

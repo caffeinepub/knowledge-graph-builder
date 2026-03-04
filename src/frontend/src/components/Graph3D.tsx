@@ -6,9 +6,12 @@ import * as THREE from "three";
 import type {
   GraphEdge,
   GraphNode,
+  IntentGroup,
   KnowledgeGraph,
   RelationType,
+  TaxonomyNode,
 } from "../types";
+import { NodeDetailModal } from "./NodeDetailModal";
 import { TooltipIcon } from "./TooltipIcon";
 
 // Color mapping for relation types (literal values for Three.js)
@@ -76,12 +79,18 @@ const _RELATION_TOOLTIPS: Record<RelationType, React.ReactNode> = {
 const NODE_COLOR_HIGH = "#00d4f5";
 const NODE_COLOR_LOW = "#1e3a5f";
 
+const NODE_TYPE_LABELS: Record<string, string> = {
+  global: "Глобальный",
+  meta: "Мета-узел",
+};
+
 interface NodeMeshProps {
   node: GraphNode;
   isSelected: boolean;
   isNeighbor: boolean;
   isHighlighted: boolean;
-  onClick: (id: string) => void;
+  connectionCount: number;
+  onClick: (node: GraphNode) => void;
   onHover: (node: GraphNode | null) => void;
 }
 
@@ -90,6 +99,7 @@ function NodeMesh({
   isSelected,
   isNeighbor,
   isHighlighted,
+  connectionCount,
   onClick,
   onHover,
 }: NodeMeshProps) {
@@ -109,6 +119,16 @@ function NodeMesh({
     );
   }, [isSelected, isNeighbor, hovered, node.tfidf]);
 
+  // Border color for the tooltip card matches the node's base color
+  const borderColor = isSelected
+    ? "#ffffff"
+    : isNeighbor
+      ? "#f59e0b"
+      : "#00d4f5";
+
+  const nodeTypeLabel =
+    NODE_TYPE_LABELS[node.group] ?? `Интент ${Number(node.group) + 1}`;
+
   useFrame((_, delta) => {
     if (meshRef.current && (isSelected || hovered)) {
       meshRef.current.rotation.y += delta * 1.5;
@@ -122,7 +142,7 @@ function NodeMesh({
       position={[node.x, node.y, node.z]}
       onClick={(e) => {
         e.stopPropagation();
-        onClick(node.id);
+        onClick(node);
       }}
       onPointerOver={(e) => {
         e.stopPropagation();
@@ -146,30 +166,169 @@ function NodeMesh({
         roughness={0.3}
         metalness={0.6}
       />
-      {(hovered || isSelected) && (
-        <Html distanceFactor={12} style={{ pointerEvents: "none" }}>
+      {hovered && (
+        <Html distanceFactor={6} style={{ pointerEvents: "none" }}>
           <div
             style={{
-              background: "rgba(10,10,20,0.92)",
-              border: "1px solid rgba(0,212,245,0.4)",
-              borderRadius: "4px",
-              padding: "6px 10px",
-              fontSize: "11px",
-              fontFamily: '"JetBrains Mono", monospace',
-              color: "#e2e8f0",
-              whiteSpace: "nowrap",
+              background: "rgba(8,10,24,0.98)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderLeft: `4px solid ${borderColor}`,
+              borderRadius: "10px",
+              padding: "14px 18px",
+              minWidth: "260px",
+              maxWidth: "320px",
+              fontFamily: '"JetBrains Mono", "Courier New", monospace',
               pointerEvents: "none",
-              boxShadow: "0 0 12px rgba(0,212,245,0.2)",
+              boxShadow:
+                "0 12px 40px rgba(0,0,0,0.85), 0 0 30px rgba(0,212,245,0.15)",
+              backdropFilter: "blur(12px)",
             }}
           >
-            <div style={{ color: "#00d4f5", fontWeight: 600 }}>
+            {/* Node label */}
+            <div
+              style={{
+                color: borderColor,
+                fontWeight: 700,
+                fontSize: "16px",
+                letterSpacing: "0.02em",
+                marginBottom: "10px",
+                lineHeight: 1.3,
+                wordBreak: "break-word",
+                whiteSpace: "normal",
+              }}
+            >
               {node.label}
             </div>
-            <div style={{ color: "#94a3b8", marginTop: 2 }}>
-              TF-IDF: {node.tfidf.toFixed(5)}
+
+            <div
+              style={{
+                height: "1px",
+                background: "rgba(255,255,255,0.1)",
+                marginBottom: "10px",
+              }}
+            />
+
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "7px" }}
+            >
+              {node.frequency !== undefined && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span style={{ color: "#94a3b8", fontSize: "12px" }}>
+                    Частота
+                  </span>
+                  <span
+                    style={{
+                      color: "#f8fafc",
+                      fontSize: "14px",
+                      fontWeight: 700,
+                      background: `rgba(${borderColor === "#f59e0b" ? "245,158,11" : "0,212,245"},0.12)`,
+                      padding: "1px 8px",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    {node.frequency.toLocaleString("ru-RU")}
+                  </span>
+                </div>
+              )}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ color: "#94a3b8", fontSize: "12px" }}>
+                  TF-IDF
+                </span>
+                <span
+                  style={{
+                    color: "#e2e8f0",
+                    fontSize: "13px",
+                    fontWeight: 500,
+                  }}
+                >
+                  {node.tfidf.toFixed(5)}
+                </span>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ color: "#94a3b8", fontSize: "12px" }}>Вес</span>
+                <span
+                  style={{
+                    color: "#e2e8f0",
+                    fontSize: "13px",
+                    fontWeight: 500,
+                  }}
+                >
+                  {node.weight.toFixed(3)}
+                </span>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ color: "#94a3b8", fontSize: "12px" }}>
+                  Связи
+                </span>
+                <span
+                  style={{
+                    color: "#a78bfa",
+                    fontSize: "14px",
+                    fontWeight: 700,
+                  }}
+                >
+                  {connectionCount}
+                </span>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <span style={{ color: "#94a3b8", fontSize: "12px" }}>Тип</span>
+                <span
+                  style={{
+                    color: "#7dd3fc",
+                    fontSize: "11px",
+                    background: "rgba(125,211,252,0.12)",
+                    padding: "2px 8px",
+                    borderRadius: "4px",
+                    fontWeight: 500,
+                  }}
+                >
+                  {nodeTypeLabel}
+                </span>
+              </div>
             </div>
-            <div style={{ color: "#94a3b8" }}>
-              Вес: {node.weight.toFixed(3)}
+
+            {/* Hint to click */}
+            <div
+              style={{
+                marginTop: "10px",
+                borderTop: "1px solid rgba(255,255,255,0.07)",
+                paddingTop: "8px",
+                color: "#475569",
+                fontSize: "10px",
+                textAlign: "center",
+              }}
+            >
+              Кликните для полной аналитики
             </div>
           </div>
         </Html>
@@ -235,9 +394,10 @@ function EdgeLine({
 
 interface SceneProps {
   graph: KnowledgeGraph;
+  onNodeClick: (node: GraphNode) => void;
 }
 
-function Scene({ graph }: SceneProps) {
+function Scene({ graph, onNodeClick }: SceneProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset selection when graph changes
@@ -269,9 +429,26 @@ function Scene({ graph }: SceneProps) {
     [graph.nodes],
   );
 
-  const handleNodeClick = useCallback((id: string) => {
-    setSelectedId((prev) => (prev === id ? null : id));
-  }, []);
+  // Compute degree (number of connections) per node
+  const nodeDegreesMap = useMemo(() => {
+    const degreeMap = new Map<string, number>();
+    for (const node of graph.nodes) {
+      degreeMap.set(node.id, 0);
+    }
+    for (const edge of graph.edges) {
+      degreeMap.set(edge.source, (degreeMap.get(edge.source) ?? 0) + 1);
+      degreeMap.set(edge.target, (degreeMap.get(edge.target) ?? 0) + 1);
+    }
+    return degreeMap;
+  }, [graph.nodes, graph.edges]);
+
+  const handleNodeClick = useCallback(
+    (node: GraphNode) => {
+      setSelectedId((prev) => (prev === node.id ? null : node.id));
+      onNodeClick(node);
+    },
+    [onNodeClick],
+  );
 
   const anySelected = selectedId !== null;
 
@@ -307,6 +484,7 @@ function Scene({ graph }: SceneProps) {
           isHighlighted={
             !anySelected || selectedId === node.id || neighborIds.has(node.id)
           }
+          connectionCount={nodeDegreesMap.get(node.id) ?? 0}
           onClick={handleNodeClick}
           onHover={() => {}}
         />
@@ -326,6 +504,9 @@ function Scene({ graph }: SceneProps) {
 
 interface Graph3DProps {
   graph: KnowledgeGraph | null;
+  fullGraph: KnowledgeGraph | null;
+  taxonomy: TaxonomyNode | null;
+  intentGroups: IntentGroup[];
 }
 
 const GRAPH_INTERACTION_TOOLTIP = (
@@ -347,18 +528,127 @@ const GRAPH_INTERACTION_TOOLTIP = (
         кнопку мыши и перетащите
       </li>
       <li>
-        <span style={{ color: "#22c55e" }}>Клик по узлу</span> — выделяет узел и
-        его соседей, подсвечивает связанные рёбра
+        <span style={{ color: "#22c55e" }}>Клик по узлу</span> — открывает
+        полную аналитику по узлу в отдельном окне
       </li>
     </ul>
     <p className="text-muted-foreground">
       Размер узла отражает его вес (значимость). Наведите курсор на узел для
-      просмотра TF-IDF и веса.
+      быстрого просмотра данных, кликните для детальной аналитики.
     </p>
   </div>
 );
 
-export function Graph3D({ graph }: Graph3DProps) {
+export function Graph3D({
+  graph,
+  fullGraph,
+  taxonomy,
+  intentGroups,
+}: Graph3DProps) {
+  const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
+  const [nodeConnectionCount, setNodeConnectionCount] = useState(0);
+  const [history, setHistory] = useState<string[]>([]);
+
+  // Use fullGraph for the modal analytics (richer data), fallback to display graph
+  const analyticsGraph = fullGraph ?? graph;
+
+  // Compute degree map for the analytics graph (fullGraph or graph)
+  const analyticsDegreesMap = useMemo(() => {
+    if (!analyticsGraph) return new Map<string, number>();
+    const degreeMap = new Map<string, number>();
+    for (const node of analyticsGraph.nodes) degreeMap.set(node.id, 0);
+    for (const edge of analyticsGraph.edges) {
+      degreeMap.set(edge.source, (degreeMap.get(edge.source) ?? 0) + 1);
+      degreeMap.set(edge.target, (degreeMap.get(edge.target) ?? 0) + 1);
+    }
+    return degreeMap;
+  }, [analyticsGraph]);
+
+  // Compute degree map for the display graph
+  const nodeDegreesMap = useMemo(() => {
+    if (!graph) return new Map<string, number>();
+    const degreeMap = new Map<string, number>();
+    for (const node of graph.nodes) degreeMap.set(node.id, 0);
+    for (const edge of graph.edges) {
+      degreeMap.set(edge.source, (degreeMap.get(edge.source) ?? 0) + 1);
+      degreeMap.set(edge.target, (degreeMap.get(edge.target) ?? 0) + 1);
+    }
+    return degreeMap;
+  }, [graph]);
+
+  /** Look up a node by label (case-insensitive) in analyticsGraph, then graph as fallback */
+  const findNodeByLabel = useCallback(
+    (label: string): GraphNode | undefined => {
+      const lower = label.toLowerCase();
+      if (analyticsGraph) {
+        const found = analyticsGraph.nodes.find(
+          (n) => n.label.toLowerCase() === lower,
+        );
+        if (found) return found;
+      }
+      if (graph) {
+        return graph.nodes.find((n) => n.label.toLowerCase() === lower);
+      }
+      return undefined;
+    },
+    [analyticsGraph, graph],
+  );
+
+  const getConnectionCount = useCallback(
+    (node: GraphNode): number => {
+      return (
+        analyticsDegreesMap.get(node.id) ?? nodeDegreesMap.get(node.id) ?? 0
+      );
+    },
+    [analyticsDegreesMap, nodeDegreesMap],
+  );
+
+  const handleNodeClick = useCallback(
+    (node: GraphNode) => {
+      const count = nodeDegreesMap.get(node.id) ?? 0;
+      setNodeConnectionCount(count);
+      setSelectedNode(node);
+      setHistory([]); // reset history when opening a new node from the graph
+    },
+    [nodeDegreesMap],
+  );
+
+  const handleNavigateToNode = useCallback(
+    (nodeLabel: string) => {
+      if (!selectedNode) return;
+      const target = findNodeByLabel(nodeLabel);
+      if (!target) return;
+
+      setHistory((prev) => [...prev, selectedNode.label]);
+      setSelectedNode(target);
+      setNodeConnectionCount(getConnectionCount(target));
+    },
+    [selectedNode, findNodeByLabel, getConnectionCount],
+  );
+
+  const handleBack = useCallback(() => {
+    if (history.length === 0) return;
+    const prevLabel = history[history.length - 1];
+    const prevNode = findNodeByLabel(prevLabel);
+    if (!prevNode) return;
+
+    setHistory((prev) => prev.slice(0, -1));
+    setSelectedNode(prevNode);
+    setNodeConnectionCount(getConnectionCount(prevNode));
+  }, [history, findNodeByLabel, getConnectionCount]);
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedNode(null);
+    setHistory([]);
+  }, []);
+
+  // Reset history when graph changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional reset on graph identity change
+  useEffect(() => {
+    setHistory([]);
+    setSelectedNode(null);
+  }, [graph]);
+
   if (!graph || graph.nodes.length === 0) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center gap-4">
@@ -433,8 +723,23 @@ export function Graph3D({ graph }: Graph3DProps) {
         style={{ background: "transparent" }}
         gl={{ antialias: true, alpha: true }}
       >
-        <Scene graph={graph} />
+        <Scene graph={graph} onNodeClick={handleNodeClick} />
       </Canvas>
+
+      {/* Node detail modal — rendered outside Canvas in DOM */}
+      {selectedNode && analyticsGraph && (
+        <NodeDetailModal
+          node={selectedNode}
+          graph={analyticsGraph}
+          taxonomy={taxonomy}
+          intentGroups={intentGroups}
+          connectionCount={nodeConnectionCount}
+          onClose={handleCloseModal}
+          onNavigateToNode={handleNavigateToNode}
+          history={history}
+          onBack={handleBack}
+        />
+      )}
     </div>
   );
 }

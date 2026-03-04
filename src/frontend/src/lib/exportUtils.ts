@@ -62,6 +62,53 @@ export function exportToJSON(
 }
 
 /**
+ * Export article structure as a Markdown file.
+ */
+export function exportToMarkdown(
+  graph: KnowledgeGraph,
+  taxonomy: TaxonomyNode,
+) {
+  const topByTfidf = [...graph.nodes].sort((a, b) => b.tfidf - a.tfidf)[0];
+  const h1 =
+    taxonomy.label !== "Knowledge Graph" && taxonomy.label !== "Root"
+      ? taxonomy.label
+      : (topByTfidf?.label ?? "Статья");
+
+  const h2nodes = taxonomy.children.slice(0, 7);
+
+  const h2sections = h2nodes.map((h2node) => ({
+    title: h2node.label,
+    h3items: h2node.children.slice(0, 4).map((h3) => h3.label),
+  }));
+
+  const usedLabels = new Set<string>([
+    h1.toLowerCase(),
+    ...h2sections.map((s) => s.title.toLowerCase()),
+    ...h2sections.flatMap((s) => s.h3items.map((h) => h.toLowerCase())),
+  ]);
+
+  const lsiWords = [...graph.nodes]
+    .sort((a, b) => b.tfidf - a.tfidf)
+    .filter((n) => !usedLabels.has(n.label.toLowerCase()))
+    .slice(0, 20)
+    .map((n) => n.label);
+
+  const lines: string[] = [`# ${h1}`, ""];
+  for (const section of h2sections) {
+    lines.push(`## ${section.title}`);
+    for (const h3 of section.h3items) {
+      lines.push(`### ${h3}`);
+    }
+    lines.push("");
+  }
+  if (lsiWords.length > 0) {
+    lines.push(`**LSI-слова:** ${lsiWords.join(", ")}`);
+  }
+
+  downloadText(lines.join("\n"), "article-structure.md", "text/markdown");
+}
+
+/**
  * Export triplets and ontology as separate CSV files.
  */
 export function exportToCSV(triplets: Triplet[], ontology: OntologyEntry[]) {

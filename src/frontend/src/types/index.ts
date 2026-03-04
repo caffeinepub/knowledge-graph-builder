@@ -12,6 +12,7 @@ export interface GraphNode {
   label: string;
   weight: number;
   tfidf: number;
+  frequency?: number;
   group: string; // 'global' or intent index as string
   x: number;
   y: number;
